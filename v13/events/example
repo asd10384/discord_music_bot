@@ -1,0 +1,11 @@
+
+require('dotenv').config();
+const db = require('quick.db');
+const { Client } = require('discord.js');
+
+module.exports = {
+  name: '',
+  execute(client = new Client) {
+
+  }
+};

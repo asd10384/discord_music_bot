@@ -19,7 +19,6 @@ module.exports = {
 
 
     const commands = client.commands;
-    return message.channel.send({ content: JSON.stringify(commands) });
     let embed = new MessageEmbed()
       .setTitle(`\` ${(message.member && message.member.nickname) ? message.member.nickname : message.member.user.username} \` 명령어`)
       .setDescription(`명령어 [같은 명령어]\n명령어 설명`)
