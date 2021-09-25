@@ -14,12 +14,12 @@ module.exports = [
     name: `${PREFIX}help`,
     type: 'WATCHING',
     status: 'online',
-    time: 20
+    time: 30
   },
   {
     name: `${PREFIX}도움말`,
     type: 'WATCHING',
     status: 'online',
-    time: 20
+    time: 30
   }
 ];

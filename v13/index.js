@@ -15,38 +15,50 @@ if (exists) unlinkSync(`json.sqlite`);
 const db = require('quick.db');
 
 // .env 가져오기
-const { TOKEN, GUILDID } = process.env;
+const { TOKEN, CLIENTID, GUILDID } = process.env;
 const PREFIX = process.env.PREFIX || '/';
+client.PREFIX = PREFIX;
 
 // 명령어 불러오기
 const commands = [];
+client.commands = new Collection();
 const commandFiles = readdirSync('./commands').filter(file => file.endsWith('.js'));
 
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   commands.push(command.data.toJSON());
+  client.commands.set(command.data.name, command);
 }
 
-// 명령어 연결
+// / 명령어 연결
 const rest = new REST({ version: '9' }).setToken(TOKEN);
 (async () => {
-  try {
-    await rest.put(
-      Routes.applicationCommands(client.user.id),
-      { body: commands }
-    );
-  } catch (err) {
-    console.error(err);
-  }
+  await rest.put(
+    Routes.applicationCommands(CLIENTID),
+    { body: commands }
+  ).then(() => {
+    console.log(`/ 명령어 연결 완료`);
+  }).catch((err) => console.error(err));
   // try {
   //   await rest.put(
-  //     Routes.applicationGuildCommands(client.user.id, GUILDID),
+  //     Routes.applicationGuildCommands(CLIENTID, GUILDID),
   //     { body: commands }
   //   );
   // } catch (err) {
   //   console.log(`${GUILDID}서버와 연결 실패`);
   // }
-});
+})();
+
+// 기본 명령어 불러오기
+const msgcommands = [];
+client.msgcommands = new Collection();
+const msgcommandFiles = readdirSync('./msgcommands').filter(file => file.endsWith('.js'));
+
+for (const file of msgcommandFiles) {
+  const command = require(`./msgcommands/${file}`);
+  msgcommands.push(command);
+  client.msgcommands.set(command.name, command);
+}
 
 // 이벤트 연결
 const eventFiles = readdirSync('./events').filter(file => file.endsWith('.js'));
@@ -60,14 +72,15 @@ for (const file of eventFiles) {
   }
 }
 
-// 기본 명령어 불러오기
-client.commands = new Collection();
-const msgcommandFiles = readdirSync('./msgcommands').filter(file => file.endsWith('.js'));
+// / 명령어 클라이언트
+client.on('interactionCreate', async (interaction) => {
+  if (!interaction.isCommand()) return;
 
-for (const file of msgcommandFiles) {
-  const command = require(`./msgcommands/${file}`);
-  client.commands.set(command.name, command);
-}
+  const command = client.commands.get(interaction.commandName);
+  if (command) {
+    command.execute(interaction, client);
+  }
+});
 
 // 기본 명령어 클라이언트
 client.on('messageCreate', async (message) => {
@@ -80,16 +93,20 @@ client.on('messageCreate', async (message) => {
     const args = content.split(/ +/g);
     const commandName = args.shift().toLowerCase();
 
-    const msgcommand = client.commands.get(commandName) || client.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
+    const msgcommand = client.msgcommands.get(commandName) || client.msgcommands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
     try {
-      await msgcommand.run(client, message, args, PREFIX, commands);
+      await msgcommand.run(client, message, args, PREFIX, commands, msgcommands);
     } catch (err) {
       if (!commandName || commandName == '') return;
-      let embed = new MessageEmbed()
-        .setColor('DARK_RED')
-        .setDescription(`\` ${commandName} \` 이라는 명령어를 찾을수 없습니다.`)
-        .setFooter(` ${PREFIX}help 를 입력해 명령어를 확인해 주세요.`);
-      message.channel.send({embeds: [embed]}).then(m => msgdelete(m, 6000));
+      // /* error check */ console.log(err);
+      message.channel.send({
+        embeds: [
+          new MessageEmbed()
+            .setColor('DARK_RED')
+            .setDescription(`\` ${commandName} \` 이라는 명령어를 찾을수 없습니다.`)
+            .setFooter(` ${PREFIX}help 를 입력해 명령어를 확인해 주세요.`)
+        ]
+      }).then(m => msgdelete(m, 6000));
     } finally {
       return msgdelete(message, 120);
     }
