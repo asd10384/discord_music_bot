@@ -1,8 +1,8 @@
-import { ApplicationCommandData, CommandInteraction, Message } from "discord.js";
+import { ChatInputApplicationCommandData, CommandInteraction, Message } from "discord.js";
 
 export interface SlashCommand {
   run: (args: CommandInteraction) => any;
-  metadata: ApplicationCommandData;
+  metadata: ChatInputApplicationCommandData;
 }
 
 export interface MsgCommand {
