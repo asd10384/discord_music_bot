@@ -1,0 +1,19 @@
+import { client } from "..";
+import { MsgCommand as Command } from "../interfaces/Command";
+import { I, D, M } from "../aliases/discord.js";
+import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+
+/** 핑 명령어 */
+export default class ExampleCommand implements Command {
+  /** 해당 명령어 설명 */
+  metadata = {
+    name: 'example',
+    description: 'example',
+    aliases: ['예시']
+  };
+
+  /** 실행되는 부분 */
+  async run(message: M) {
+    message.channel.send({ content: '예시 명령어' }).then(m => client.msgdelete(m, 0.5));
+  }
+}
