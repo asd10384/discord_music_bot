@@ -2,17 +2,17 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const __1 = require("..");
 const discord_js_1 = require("discord.js");
-class PingCommand {
+class PongCommand {
     metadata = {
-        name: 'ping',
-        description: 'Ping!',
-        aliases: ['핑']
+        name: 'pong',
+        description: 'Pong!',
+        aliases: ['퐁']
     };
-    async run(message) {
+    async run(message, args) {
         message.channel.send({
             embeds: [
                 new discord_js_1.MessageEmbed()
-                    .setTitle(`Pong!`)
+                    .setTitle(`Ping!`)
                     .setDescription(`**${__1.client.ws.ping}ms**`)
                     .setFooter(`이 메세지는 곧 삭제됩니다.`)
                     .setColor('ORANGE')
@@ -20,4 +20,4 @@ class PingCommand {
         }).then(m => __1.client.msgdelete(m, 1.5));
     }
 }
-exports.default = PingCommand;
+exports.default = PongCommand;
