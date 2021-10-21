@@ -2,6 +2,7 @@ import { client } from "..";
 import { MsgCommand as Command } from "../interfaces/Command";
 import { I, D, M } from "../aliases/discord.js.js";
 import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import mkembed from "../function/mkembed";
 
 /** 퐁 명령어 */
 export default class PongCommand implements Command {
@@ -16,11 +17,12 @@ export default class PongCommand implements Command {
   async run(message: M, args: string[]) {
     message.channel.send({
       embeds: [
-        new MessageEmbed()
-          .setTitle(`Ping!`)
-          .setDescription(`**${client.ws.ping}ms**`)
-          .setFooter(`이 메세지는 곧 삭제됩니다.`)
-          .setColor('ORANGE')
+        mkembed({
+          title: `Ping!`,
+          description: `**${client.ws.ping}ms**`,
+          footer: { text: `이 메세지는 곧 삭제됩니다.` },
+          color: 'ORANGE'
+        })
       ]
     }).then(m => client.msgdelete(m, 1.5));
   }

@@ -1,7 +1,8 @@
 import { client, msg, slash } from "..";
 import { SlashCommand as Command } from "../interfaces/Command";
 import { I, D } from "../aliases/discord.js.js";
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { MessageActionRow, MessageButton } from "discord.js";
+import mkembed from "../function/mkembed";
 
 /** help 명령어 */
 export default class HelpCommand implements Command {
@@ -23,7 +24,7 @@ export default class HelpCommand implements Command {
     if (commandName) {
       const slashcommand = slash.commands.get(commandName);
       const msgcommand = msg.commands.get(commandName);
-      let embed = new MessageEmbed().setColor('ORANGE');
+      let embed = mkembed({ color: 'ORANGE' });
       if (slashcommand) {
         embed.setTitle(`\` /${commandName} \` 명령어`)
           .setDescription(`이름: ${commandName}\n설명: ${slashcommand.metadata.description}`)
@@ -40,15 +41,17 @@ export default class HelpCommand implements Command {
       }
       return await interaction.editReply({ embeds: [ embed ] });
     }
-    let slashcmdembed = new MessageEmbed()
-      .setTitle(`\` slash (/) \` 명령어`)
-      .setDescription(`명령어\n명령어 설명`)
-      .setColor('ORANGE');
-    let msgcmdembed = new MessageEmbed()
-      .setTitle(`\` 기본 (${client.prefix}) \` 명령어`)
-      .setDescription(`명령어\n명령어 설명`)
-      .setFooter(`PREFIX: ${client.prefix}`)
-      .setColor('ORANGE');
+    let slashcmdembed = mkembed({
+      title: `\` slash (/) \` 명령어`,
+      description: `명령어\n명령어 설명`,
+      color: 'ORANGE'
+    });
+    let msgcmdembed = mkembed({
+      title: `\` 기본 (${client.prefix}) \` 명령어`,
+      description: `명령어 [같은 명령어]\n명령어 설명`,
+      footer: { text: `PREFIX: ${client.prefix}` },
+      color: 'ORANGE'
+    });
     slash.commands.forEach((cmd) => {
       slashcmdembed.addField(`**/${cmd.metadata.name}**`, `${cmd.metadata.description}`, true);
     });

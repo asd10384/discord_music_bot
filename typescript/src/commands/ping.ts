@@ -1,7 +1,8 @@
 import { client } from "..";
 import { SlashCommand as Command } from "../interfaces/Command";
 import { I, D } from "../aliases/discord.js";
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { MessageActionRow, MessageButton } from "discord.js";
+import mkembed from "../function/mkembed";
 
 /** 핑 명령어 */
 export default class PingCommand implements Command {
@@ -19,10 +20,11 @@ export default class PingCommand implements Command {
 
     await interaction.editReply({
       embeds: [
-        new MessageEmbed()
-          .setTitle(`Pong!`)
-          .setDescription(`**${client.ws.ping}ms**`)
-          .setColor('ORANGE')
+        mkembed({
+          title: `Pong!`,
+          description: `**${client.ws.ping}ms**`,
+          color: 'ORANGE'
+        })
       ], components: [actionRow]
     });
     const i = await interaction.channel?.awaitMessageComponent({

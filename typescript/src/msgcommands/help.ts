@@ -1,7 +1,8 @@
 import { client, msg, slash } from "..";
 import { MsgCommand as Command } from "../interfaces/Command";
 import { I, D, M } from "../aliases/discord.js.js";
-import { MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import { MessageActionRow, MessageButton } from "discord.js";
+import mkembed from "../function/mkembed";
 
 /** help 명령어 */
 export default class HelpCommand implements Command {
@@ -17,7 +18,7 @@ export default class HelpCommand implements Command {
     if (args[0]) {
       const slashcommand = slash.commands.get(args[0]);
       const msgcommand = msg.commands.get(args[0]) || msg.commands.find((cmd) => cmd.metadata.aliases && cmd.metadata.aliases.includes(args[0]));
-      let embed = new MessageEmbed().setColor('ORANGE');
+      let embed = mkembed({ color: 'ORANGE' });
       if (slashcommand) {
         embed.setTitle(`\` /${args[0]} \` 명령어`)
           .setDescription(`이름: ${args[0]}\n설명: ${slashcommand.metadata.description}\n옵션: ${slashcommand.metadata.options}`)
@@ -34,15 +35,17 @@ export default class HelpCommand implements Command {
       }
       return message.channel.send({ embeds: [ embed ] }).then(m => client.msgdelete(m, 2.5));
     }
-    let slashcmdembed = new MessageEmbed()
-      .setTitle(`\` slash (/) \` 명령어`)
-      .setDescription(`명령어\n명령어 설명`)
-      .setColor('ORANGE');
-    let msgcmdembed = new MessageEmbed()
-      .setTitle(`\` 기본 (${client.prefix}) \` 명령어`)
-      .setDescription(`명령어\n명령어 설명`)
-      .setFooter(`PREFIX: ${client.prefix}`)
-      .setColor('ORANGE');
+    let slashcmdembed = mkembed({
+      title: `\` slash (/) \` 명령어`,
+      description: `명령어\n명령어 설명`,
+      color: 'ORANGE'
+    });
+    let msgcmdembed = mkembed({
+      title: `\` 기본 (${client.prefix}) \` 명령어`,
+      description: `명령어 [같은 명령어]\n명령어 설명`,
+      footer: { text: `PREFIX: ${client.prefix}` },
+      color: 'ORANGE'
+    });
     slash.commands.forEach((cmd) => {
       slashcmdembed.addField(`**/${cmd.metadata.name}**`, `${cmd.metadata.description}`, true);
     });
