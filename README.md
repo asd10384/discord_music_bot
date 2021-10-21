@@ -1,6 +1,6 @@
 # discord_v13
 
-디스코드 봇 버전별 example
+## 디스코드 봇 템플릿
  + v12
- + v13
- + others
+ + v13 (v12 -> v13)
+ + typescript (v13)
