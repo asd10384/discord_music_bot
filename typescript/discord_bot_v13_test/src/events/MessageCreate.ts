@@ -12,80 +12,64 @@ export default class MessageCreate extends Event {
     this.cooldowns = new Collection();
   }
 
-  run = async (args: DiscordMessage[]): Promise<DiscordMessage> => {
+  run = async (args: DiscordMessage[]): Promise<DiscordMessage | void> => {
     const [message] = args;
 
-    // Does nothing if sender is a bot
+    // 봇 입력 제거
     if (message.author.bot) return;
 
-    // Check if there was a custom prefix, else use default
+    // prefix 확인 (없으면 기본값 [config참고])
     const prefix = this.findPrefix(message.guild);
 
-    if (!message.content.startsWith(prefix)) return;
+    if (message.content.startsWith(prefix)) {
+      // prefix 제거하고 args 재생성
+      const messageArgs = message.content.slice(prefix.length).split(/ +/);
+      // 첫 args 를 소문자로 변환후 commandName 으로 등록
+      const commandName = messageArgs.shift().toLowerCase();
 
-    // Stores the arguments in a new array without the prefix and splits array into strings
-    const messageArgs = message.content.slice(prefix.length).split(/ +/);
+      // command 확인
+      const command = this.client.commands.get(commandName) || this.client.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
+      if (!command) return;
 
-    // Removes the first argument as the command name, and converts to lower case
-    const commandName = messageArgs.shift().toLowerCase();
-
-    // Checks the commands folder if it has a command that the message requested
-    const command =
-      this.client.commands.get(commandName) ||
-      this.client.commands.find(
-        (cmd) => cmd.aliases && cmd.aliases.includes(commandName)
-      );
-    if (!command) return;
-
-    // Errors with command
-    //----------------------------------------------------------------------------
-
-    // DMs
-    if (command.guildOnly && message.channel.type === "DM") {
-      return message.reply("I can't execute that command inside DMs!");
-    }
-
-    // No Arguments
-    if (command.args && !args.length) {
-      let reply = `You didn't provide any arguments, ${message.author}`;
-      if (command.usage) {
-        reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``;
+      // 커맨드 오류처리
+      //----------------------------------------------------------------------------
+      
+      // DMs
+      if (command.guildOnly && message.channel.type === "DM") {
+        return message.channel.send({ content: `\` ${commandName} \` 명령어는 **개인 메세지**에서 사용할수 없습니다.` }).then(m => this.client.msgdelete(m, 1));
       }
-      if (command.example) {
-        reply += `\nExample: \`${prefix}${command.name} ${command.example}\``;
+
+      // 쿨타임
+      if (!this.cooldowns.has(command.name)) this.cooldowns.set(command.name, new Collection());
+      const now = Date.now();
+      const timestamps = this.cooldowns.get(command.name);
+      const cooldownAmount = command.cooldown * 1000;
+
+      if (timestamps.has(message.author.id)) {
+        const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
+        if (now < expirationTime) {
+          const timeLeft = (expirationTime - now) / 1000;
+          return message.channel.send({ embeds: [
+            this.client.mkembed({
+              author: { name: message.guild.name, iconURL: message.guild.iconURL({ dynamic: true }) },
+              title: `\` ${message.member.nickname ? message.member.nickname : message.author.username} \` \` ${commandName} \` 쿨타임`,
+              description: `**${timeLeft.toFixed(2)}**초후 사용해주세요.`,
+              color: "DARK_RED"
+            })
+          ] }).then(m => this.client.msgdelete(m, 1));
+        }
       }
-      return message.channel.send(reply);
-    }
+      timestamps.set(message.author.id, now);
+      setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
 
-    // Cooldowns
-    if (!this.cooldowns.has(command.name)) {
-      this.cooldowns.set(command.name, new Collection());
-    }
-    const now = Date.now();
-    const timestamps = this.cooldowns.get(command.name);
-    const cooldownAmount = command.cooldown * 1000;
-
-    if (timestamps.has(message.author.id)) {
-      const expirationTime = timestamps.get(message.author.id) + cooldownAmount;
-      if (now < expirationTime) {
-        const timeLeft = (expirationTime - now) / 1000;
-        return message.reply(
-          `please wait ${timeLeft.toFixed(
-            1
-          )} more seconds before reusing the \`${command.name}\` command.`
-        );
+      // Else executes the command
+      //----------------------------------------------------------------------------
+      try {
+        command.execute(message, messageArgs);
+      } catch (error) {
+        message.reply(`There was an error ${error}`);
+        if (this.client.debug) console.log(error);
       }
-    }
-    timestamps.set(message.author.id, now);
-    setTimeout(() => timestamps.delete(message.author.id), cooldownAmount);
-
-    // Else executes the command
-    //----------------------------------------------------------------------------
-    try {
-      command.execute(message, messageArgs);
-    } catch (error) {
-      message.reply(`There was an error ${error}`);
-      console.log(error);
     }
   };
 

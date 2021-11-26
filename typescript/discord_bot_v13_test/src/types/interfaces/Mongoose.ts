@@ -1,6 +1,5 @@
 export interface IUser {
-  discordID: string;
-  steamID: string;
+  userId: string;
 }
 
 export interface IGuild {

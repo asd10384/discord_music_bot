@@ -12,9 +12,7 @@ export default class VoiceStateUpdate extends Event {
 
     // If the guild does not have music playing
     const serverQueue = musicQueue.get(guildId);
-    if (!serverQueue) {
-      return;
-    }
+    if (!serverQueue) return;
 
     // If the member who left was the bot
     const clientUser = this.client.user;
@@ -29,10 +27,7 @@ export default class VoiceStateUpdate extends Event {
     }
     // Check if the voice channel is empty
     else if (this.shouldLeave(serverQueue)) {
-      setTimeout(
-        () => this.leaveVoiceChannel(musicQueue, guildId),
-        vcStandbyDuration
-      );
+      setTimeout(() => this.leaveVoiceChannel(musicQueue, guildId), vcStandbyDuration);
     }
   };
 
@@ -44,10 +39,7 @@ export default class VoiceStateUpdate extends Event {
    * @param musicQueue the music queue map for all servers
    * @param guildId the id of the relevant server
    */
-  private leaveVoiceChannel(
-    musicQueue: Map<string, IServerMusicQueue>,
-    guildId: string
-  ): void {
+  private leaveVoiceChannel(musicQueue: Map<string, IServerMusicQueue>, guildId: string): void {
     const serverQueue = musicQueue.get(guildId);
     if (serverQueue !== null && this.shouldLeave(serverQueue)) {
       const connection = getVoiceConnection(guildId);

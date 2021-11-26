@@ -1,10 +1,9 @@
 import { IUser } from "../types/interfaces/Mongoose";
 import { Schema, Model, model, models } from "mongoose";
+import { botnumber } from "../config";
 
 export const User = new Schema({
-  discordID: { type: String, required: true },
-  steamID: { type: String, required: true },
+  userId: { type: String, required: true }
 });
 
-export const UserModel: Model<IUser> =
-  models.User || model<IUser>("User", User);
+export const UserModel: Model<IUser> = models.User || model<IUser>(`User${botnumber}`, User);

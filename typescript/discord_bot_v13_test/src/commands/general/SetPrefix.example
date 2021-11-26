@@ -4,6 +4,8 @@ import { Command } from "../../types/Command";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction, Message, MessageEmbed } from "discord.js";
 
+// 조만간 제작 예정
+
 export default class SetPrefix extends Command {
   name = "setprefix";
   visible = true;
@@ -75,6 +77,6 @@ export default class SetPrefix extends Command {
     const description = successful
       ? `Set new prefix to **${newPrefix}**`
       : `There was an error setting prefix to **${newPrefix}**`;
-    return this.createColouredEmbed(description);
+    return this.client.mkembed({ description: description });
   }
 }

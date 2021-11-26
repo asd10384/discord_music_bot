@@ -1,0 +1,27 @@
+import { Command } from "../../types/Command";
+import { SlashCommandBuilder } from "@discordjs/builders";
+import { CommandInteraction, Message, MessageEmbed } from "discord.js";
+
+export default class Test extends Command {
+  name = "test"; // 이름
+  visible = true; // 사용가능한가
+  description = "test"; // slash command 설명 (한글안됨)
+  information = "테스트"; // command 설명
+  aliases = [  ]; // 다른사용법
+  cooldown = 1; // 쿨타임
+  category = "기본"; // 카테고리
+  guildOnly = true; // 서버에서만 사용가능 (false로 설정하면 DM(개인메세지에서 사용가능))
+  data = new SlashCommandBuilder() // slash command 설정
+    .setName(this.name) // slash command 이름
+    .setDescription(this.description) // slash command 설명
+  execute = (message: Message): Promise<Message | void> => {
+    return message.channel.send({ embeds: [ this.test() ] }).then(m => this.client.msgdelete(m, 1.5));
+  };
+  executeSlash = (interaction: CommandInteraction): Promise<void> => {
+    return interaction.reply({ embeds: [ this.test() ] });
+  };
+
+  private test(): MessageEmbed {
+    return this.client.mkembed({ title: `test` });
+  }
+}

@@ -1,24 +1,6 @@
 import { AudioPlayer } from "@discordjs/voice";
-import {
-  Collection,
-  GuildMember,
-  Message,
-  StageChannel,
-  TextChannel,
-  VoiceChannel,
-} from "discord.js";
-
-import ytdl = require("ytdl-core");
-
-/**
- * Contains data for a hero in the counter command
- */
-export interface IHero {
-  name: string;
-  count: number;
-  winrate: number;
-  disadvantage: number;
-}
+import { Collection, GuildMember, Message, StageChannel, TextChannel, VoiceChannel } from "discord.js";
+import * as ytdl from "ytdl-core";
 
 /**
  * Contains all the data for each song in the play song command
@@ -59,47 +41,6 @@ export interface IPlayerData {
   winRate: number;
   rankTier: number;
   leaderboardRank: number;
-  heroes: IPlayerHeroData[];
-  recent: IPlayerRecentData;
-}
-
-/**
- * Contains data for one hero in the profile command
- */
-export interface IPlayerHeroData {
-  name: string;
-  games: number;
-  winRate: number;
-  percentile: string;
-}
-
-/**
- * Contains data about the player's recent match in the profile command
- */
-export interface IPlayerRecentData {
-  outcome: string;
-  skill: string;
-  lobbyType: string;
-  gameMode: string;
-  hero: string;
-  kills: number;
-  deaths: number;
-  assists: number;
-  goldPerMin: number;
-  expPerMin: number;
-  date: string;
-  duration: string;
-}
-
-/**
- * Contains data for a hero in the meta command
- */
-export interface IMetaHeroData {
-  name: string;
-  pickRate: string;
-  winRate: string;
-  index: number;
-  popularity: number;
 }
 
 export type Cooldown = Collection<string, number>;

@@ -1,10 +1,10 @@
 import { Command } from "./Command";
 import { Event } from "./Event";
 import { IServerMusicQueue } from "./interfaces/Bot";
-import { Collection, Client as DiscordClient, Intents, ColorResolvable } from "discord.js";
+import { Collection, Client as DiscordClient, Intents, ColorResolvable, Message, MessageEmbedOptions, MessageEmbed } from "discord.js";
 import { readdirSync, statSync } from "fs";
 import { join } from "path";
-import { color } from "../config";
+import { color, msgdeletetime } from "../config";
 
 export class Client extends DiscordClient {
   commands: Collection<string, Command>;
@@ -14,6 +14,7 @@ export class Client extends DiscordClient {
   declare token: string;
   testGuildId: string;
   color: ColorResolvable;
+  debug: boolean;
 
   /**
    * @param commandsPath the path from root to the commands directory
@@ -22,8 +23,9 @@ export class Client extends DiscordClient {
   public constructor(
     commandsPath: string,
     eventsPath: string,
+    dev: boolean,
     token?: string,
-    testGuildId?: string
+    testGuildId?: string,
   ) {
     super({
       intents: [
@@ -40,6 +42,7 @@ export class Client extends DiscordClient {
     this.token = token;
     this.testGuildId = testGuildId;
     this.color = color;
+    this.debug = dev;
 
     // Load all the commands
     readdirSync(commandsPath).forEach((dir) => {
@@ -63,7 +66,7 @@ export class Client extends DiscordClient {
 
     // Load all the events
     const eventFiles = readdirSync(eventsPath).filter((f) => f.endsWith(".js") || f.endsWith(".ts"));
-    
+
     for (const file of eventFiles) {
       const FoundEvent = require(join(`../events/${file}`)).default;
       const event: Event = new FoundEvent(this);
@@ -72,5 +75,38 @@ export class Client extends DiscordClient {
       console.log(`${eventName} 이벤트 연결완료`);
       this.on(eventName, (...args: unknown[]) => event.run(args));
     }
+  }
+
+  /**
+   * msgdelete
+   * @param message Message
+   * @param deletetime 기본시간(config참고)을 얼마나 사용할지설정 (사용예: 1.3)
+   * @param customtime 기본시간(config참고)을 사용하지 않고 직접 설정
+   */
+  public msgdelete(message: Message, deletetime: number, customtime?: boolean) {
+    var time = customtime ? deletetime : msgdeletetime * deletetime;
+    if (time < 100) time = 100;
+    setTimeout(() => {
+      try {
+        message.delete();
+      } catch {}
+    }, time);
+  }
+
+  /**
+   * mkembed
+   * @param options 임배드에 들어갈 옵션들
+   */
+  public mkembed(options?: MessageEmbedOptions): MessageEmbed {
+    const embed = new MessageEmbed().setColor(this.color);
+    if (options?.title) embed.setTitle(options.title);
+    if (options?.description) embed.setDescription(options.description);
+    if (options?.author) embed.setAuthor(options.author.name, options.author.iconURL, options.author.url);
+    if (options?.url) embed.setURL(options.url);
+    if (options?.footer) embed.setFooter(options.footer.text, options.footer.iconURL);
+    if (options?.image) embed.setImage(options.image.url);
+    if (options?.thumbnail) embed.setThumbnail(options.thumbnail.url);
+    if (options?.color) embed.setColor(options.color);
+    return embed;
   }
 }

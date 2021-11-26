@@ -1,16 +1,7 @@
 import { Client } from "./Client";
 import { ISong } from "./interfaces/Bot";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import {
-  CommandInteraction,
-  Message,
-  MessageActionRow,
-  MessageButton,
-  MessageEmbed,
-  StageChannel,
-  TextBasedChannels,
-  VoiceChannel,
-} from "discord.js";
+import { CommandInteraction, Message, MessageActionRow, MessageButton, MessageEmbed, StageChannel, TextBasedChannels, VoiceChannel } from "discord.js";
 
 export abstract class Command {
   client: Client;
@@ -19,14 +10,11 @@ export abstract class Command {
   abstract description: string;
   abstract information: string;
   abstract aliases: string[];
-  abstract args: boolean;
-  abstract usage: string;
-  abstract example: string;
   abstract cooldown: number;
   abstract category: string;
   abstract guildOnly: boolean;
   abstract data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
-  abstract execute: (message: Message, args?: string[]) => Promise<Message>;
+  abstract execute: (message: Message, args?: string[]) => Promise<Message | void>;
   abstract executeSlash: (interaction: CommandInteraction) => Promise<void>;
 
   public constructor(client: Client) {
@@ -54,28 +42,6 @@ export abstract class Command {
   }
 
   /**
-   * Creates a new embed with that message and sends it to the channel, and
-   * stop typing in the channel
-   *
-   * @param channel the channel to send the message in
-   * @param message the message to send
-   * @returns a promise for the sent message
-   */
-  protected createAndSendEmbed(channel: TextBasedChannels, description?: string): Promise<Message> {
-    return channel.send({embeds: [ this.createColouredEmbed(description) ]});
-  }
-
-  /**
-   * @param description (optional) the description for the embed
-   * @returns a new MessageEmbed with the blue colouring
-   */
-  protected createColouredEmbed(description?: string): MessageEmbed {
-    const embed = new MessageEmbed().setColor("#0099ff");
-    if (description) embed.setDescription(description);
-    return embed;
-  }
-
-  /**
    * Check if the bot has permissions to join the voice channel.
    *
    * @param voiceChannel the voice channel to join
@@ -85,9 +51,9 @@ export abstract class Command {
   protected hasPermissions(voiceChannel: VoiceChannel | StageChannel): string {
     const permissions = voiceChannel.permissionsFor(this.client.user);
     if (!permissions.has("CONNECT")) {
-      return "I need the permissions to join your voice channel!";
+      return "음성채널에 들어갈수있는 권한이 없습니다.";
     } else if (!permissions.has("SPEAK")) {
-      return "I need the permissions to speak in your voice channel!";
+      return "음성채널에서 말할수있는 권한이 없습니다.";
     }
     return null;
   }
