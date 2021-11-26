@@ -29,16 +29,19 @@
 
   </br>
 
+  #### 설치
+
+  * cmd 명령어
   ```bash
-  # 설치
-
-  # cmd 명령어
   npm install -g ts-node && npm i --save-dev --force typescript ts-node ts-node-dev && npm i --save-dev --force ts-cleaner nodemon @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-config-standard eslint-plugin-import eslint-plugin-node eslint-plugin-promise && npm i sodium --ignore-scripts --save --force && npm install --force && npm i @discordjs/voice --save --force && npm i prism-media --save --force && npm i @discordjs/opus --save --force && npm i opusscript --save --force && npm i libsodium-wrappers --save --force && npm i tweetnacl --save --force
-
-  # PowerShell 명령어
+  ```
+  
+  * PowerShell 명령어
+  ```bash
   npm install -g ts-node; npm i --save-dev --force typescript ts-node ts-node-dev; npm i --save-dev --force ts-cleaner nodemon @types/node @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-config-standard eslint-plugin-import eslint-plugin-node eslint-plugin-promise; npm i sodium --ignore-scripts --save --force; npm install --force; npm i @discordjs/voice --save --force; npm i prism-media --save --force; npm i @discordjs/opus --save --force; npm i opusscript --save --force; npm i libsodium-wrappers --save --force; npm i tweetnacl --save --force
-
-  # 봇 실행
+  ```
+  * 봇 실행
+  ```bash
   npm run dev
   ```
 
