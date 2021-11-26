@@ -3,7 +3,6 @@
 ## [[ 서버에 봇 추가하기 ]](https://discord.com)
 
 </br>
-</br>
 
 ## 목차
   1. [설정](#Setup)
@@ -27,8 +26,6 @@
 
   ### node 와 npm 이 설치되어있는지 확인하고 아래 내용을 실행하세요.
 
-  </br>
-
   #### 설치
 
   * cmd 명령어
@@ -44,10 +41,9 @@
   ```bash
   npm run dev
   ```
+</br>
 
 ## 추가정보 <a name="Extra_Information"></a>
-
-  </br>
 
   ### 언어
   
