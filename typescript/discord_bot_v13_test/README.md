@@ -1,6 +1,7 @@
 # Discord bot
 
-## [[ 서버에 봇 추가하기 ]](https://discord.com)
+## [[ 서버에 봇 추가하기 ]](https://discord.com/)
+    ↑ 현재 등록되어있지 않음
 
 </br>
 
