@@ -7,32 +7,25 @@ export default class Remove extends Command {
   name = "remove";
   visible = true;
   description = "Remove a song with the same name from the queue";
-  information =
-    "Remove a song with the same name from the queue. Will not remove the currently playing song.";
-  aliases = [];
-  args = true;
-  usage: "[song_name]";
-  example = "whitley nova";
-  cooldown = 0;
-  category = "music";
+  information = "queue에서 선택한 노래 제거";
+  aliases = [ "제거" ];
+  cooldown = 1;
+  category = "음악";
   guildOnly = true;
   data = new SlashCommandBuilder()
     .setName(this.name)
     .setDescription(this.description)
-    .addStringOption((option) =>
-      option.setName("song").setDescription("The name of the song to remove")
+    .addStringOption((option) => option
+      .setName("number")
+      .setDescription("The name of the song to remove")
     );
-  execute = (message: Message, args: string[]): Promise<Message> => {
-    return message.channel.send({ embeds: [this.remove(message.guild, args)] });
+  execute = async (message: Message, args: string[]): Promise<any> => {
+    return message.channel.send({ embeds: [ this.remove(message.guild, args) ] });
   };
-  executeSlash = (interaction: CommandInteraction): Promise<void> => {
-    return interaction.reply({
-      embeds: [
-        this.remove(interaction.guild, [
-          interaction.options.get("song").value as string,
-        ]),
-      ],
-    });
+  executeSlash = async (interaction: CommandInteraction): Promise<any> => {
+    return await interaction.editReply({ embeds: [
+      this.remove(interaction.guild, [ interaction.options.get("number").value as string ])
+    ] });
   };
 
   /**
@@ -45,9 +38,7 @@ export default class Remove extends Command {
    */
   private remove(guild: Guild, args: string[]): MessageEmbed {
     const serverQueue = this.client.musicQueue.get(guild.id);
-    if (!serverQueue || serverQueue.songs.length === 0) {
-      return this.createColouredEmbed("There's no active queue");
-    }
+    if (!serverQueue || serverQueue.songs.length === 0) return this.client.mkembed({ description: "There's no active queue" });
 
     const removeSongName = args.join(" ").toLowerCase();
     let removedSong: ISong = null;
@@ -62,10 +53,7 @@ export default class Remove extends Command {
       }
     }
 
-    const description =
-      removedSong === null
-        ? `Could not find ${removeSongName} in the queue`
-        : `Removed ${this.getFormattedLink(removedSong)} from the queue`;
-    return this.createColouredEmbed(description);
+    const description = (removedSong === null) ? `Could not find ${removeSongName} in the queue` : `Removed ${this.getFormattedLink(removedSong)} from the queue`;
+    return this.client.mkembed({ description: description });
   }
 }

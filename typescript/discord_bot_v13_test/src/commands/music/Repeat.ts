@@ -1,48 +1,29 @@
 import { Command } from "../../types/Command";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import {
-  CommandInteraction,
-  GuildMember,
-  Message,
-  VoiceChannel,
-} from "discord.js";
+import { CommandInteraction, GuildMember, Message, VoiceChannel } from "discord.js";
 
 export default class Repeat extends Command {
   name = "repeat";
   visible = true;
   description = "Repeat the queue";
-  information =
-    "After the current song is complete, it is automatically added to the end of the queue";
-  aliases = ["r"];
-  args = false;
-  usage = "";
-  example: "";
-  cooldown = 0;
-  category = "music";
+  information = "노래 반복재생";
+  aliases = [ "반복" ];
+  cooldown = 1;
+  category = "음악";
   guildOnly = true;
   data = new SlashCommandBuilder()
     .setName(this.name)
     .setDescription(this.description);
   execute = (message: Message): Promise<Message> => {
-    return message.channel.send({
-      embeds: [
-        this.repeat(
-          message.member.voice.channel as VoiceChannel,
-          message.guild.id
-        ),
-      ],
-    });
+    return message.channel.send({ embeds: [
+      this.repeat(message.member.voice.channel as VoiceChannel, message.guild.id)
+    ] });
   };
-  executeSlash = (interaction: CommandInteraction): Promise<void> => {
+  executeSlash = async (interaction: CommandInteraction): Promise<any> => {
     interaction.member = interaction.member as GuildMember;
-    return interaction.reply({
-      embeds: [
-        this.repeat(
-          interaction.member.voice.channel as VoiceChannel,
-          interaction.guild.id
-        ),
-      ],
-    });
+    return await interaction.editReply({ embeds: [
+      this.repeat(interaction.member.voice.channel as VoiceChannel, interaction.guild.id)
+    ] });
   };
 
   /**
@@ -56,21 +37,15 @@ export default class Repeat extends Command {
     const musicQueue = this.client.musicQueue;
     const serverQueue = musicQueue.get(guildId);
 
-    if (!serverQueue) {
-      return this.createColouredEmbed(
-        "There is no active music queue in the server!"
-      );
-    }
+    if (!serverQueue) return this.client.mkembed({
+      description: "There is no active music queue in the server!"
+    });
 
-    if (serverQueue.voiceChannel !== voiceChannel) {
-      return this.createColouredEmbed("You are not in the right voice channel");
-    }
+    if (serverQueue.voiceChannel !== voiceChannel) return this.client.mkembed({ description: "You are not in the right voice channel" });
 
     serverQueue.isRepeating = !serverQueue.isRepeating;
-    return this.createColouredEmbed(
-      `Queue is now **${
-        serverQueue.isRepeating ? "repeating" : "not repeating"
-      }**`
-    );
+    return this.client.mkembed({
+      description: `Queue is now **${serverQueue.isRepeating ? "repeating" : "not repeating"}**`
+    });
   }
 }

@@ -1,48 +1,30 @@
 import { Command } from "../../types/Command";
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { getVoiceConnection } from "@discordjs/voice";
-import {
-  CommandInteraction,
-  GuildMember,
-  Message,
-  VoiceChannel,
-} from "discord.js";
+import { CommandInteraction, GuildMember, Message, VoiceChannel } from "discord.js";
 
 export default class Stop extends Command {
   name = "stop";
   visible = true;
   description = "Remove all songs from the current queue";
-  information = "";
+  information = "음악 중지";
   aliases = [];
-  args = false;
-  usage = "";
-  example = "";
-  cooldown = 0;
-  category = "music";
+  cooldown = 1;
+  category = "음악";
   guildOnly = true;
   data = new SlashCommandBuilder()
     .setName(this.name)
     .setDescription(this.description);
   execute = (message: Message): Promise<Message> => {
-    return message.channel.send({
-      embeds: [
-        this.stop(
-          message.member.voice.channel as VoiceChannel,
-          message.guild.id
-        ),
-      ],
-    });
+    return message.channel.send({ embeds: [
+      this.stop(message.member.voice.channel as VoiceChannel, message.guild.id)
+    ] });
   };
-  executeSlash = (interaction: CommandInteraction): Promise<void> => {
+  executeSlash = async (interaction: CommandInteraction): Promise<any> => {
     interaction.member = interaction.member as GuildMember;
-    return interaction.reply({
-      embeds: [
-        this.stop(
-          interaction.member.voice.channel as VoiceChannel,
-          interaction.guild.id
-        ),
-      ],
-    });
+    return await interaction.editReply({ embeds: [
+      this.stop(interaction.member.voice.channel as VoiceChannel, interaction.guild.id)
+    ] });
   };
 
   /**
@@ -57,18 +39,20 @@ export default class Stop extends Command {
     const serverQueue = musicQueue.get(guildId);
 
     if (!serverQueue) {
-      return this.createColouredEmbed(
-        "There is no active music queue in the server!"
-      );
+      return this.client.mkembed({
+        description: "There is no active music queue in the server!"
+      });
     }
 
     if (serverQueue.voiceChannel !== voiceChannel) {
-      return this.createColouredEmbed("You are not in the right voice channel");
+      return this.client.mkembed({
+        description: "You are not in the right voice channel"
+      });
     }
 
     serverQueue.songs = [];
     const connection = getVoiceConnection(guildId);
     connection.destroy();
-    return this.createColouredEmbed("Removed all songs from the queue");
+    return this.client.mkembed({ description: "Removed all songs from the queue" });
   }
 }

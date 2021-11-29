@@ -1,48 +1,29 @@
 import { Command } from "../../types/Command";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import {
-  CommandInteraction,
-  GuildMember,
-  Message,
-  MessageEmbed,
-  VoiceChannel,
-} from "discord.js";
+import { CommandInteraction, GuildMember, Message, MessageEmbed, VoiceChannel } from "discord.js";
 
 export default class Skip extends Command {
   name = "skip";
   visible = true;
   description = "Skip the current song in the queue";
-  information = "";
+  information = "노래 스킵";
   aliases = [];
-  args = false;
-  usage = "";
-  example = "";
-  cooldown = 0;
-  category = "music";
+  cooldown = 1;
+  category = "음악";
   guildOnly = true;
   data = new SlashCommandBuilder()
     .setName(this.name)
     .setDescription(this.description);
   execute = (message: Message): Promise<Message> => {
-    return message.channel.send({
-      embeds: [
-        this.skip(
-          message.member.voice.channel as VoiceChannel,
-          message.guild.id
-        ),
-      ],
-    });
+    return message.channel.send({ embeds: [
+      this.skip(message.member.voice.channel as VoiceChannel, message.guild.id)
+    ] });
   };
-  executeSlash = (interaction: CommandInteraction): Promise<void> => {
+  executeSlash = async (interaction: CommandInteraction): Promise<any> => {
     interaction.member = interaction.member as GuildMember;
-    return interaction.reply({
-      embeds: [
-        this.skip(
-          interaction.member.voice.channel as VoiceChannel,
-          interaction.guild.id
-        ),
-      ],
-    });
+    return await interaction.editReply({ embeds: [
+      this.skip(interaction.member.voice.channel as VoiceChannel, interaction.guild.id)
+    ] });
   };
 
   /**
@@ -57,13 +38,15 @@ export default class Skip extends Command {
     const serverQueue = musicQueue.get(guildId);
 
     if (!serverQueue) {
-      return this.createColouredEmbed(
-        "There is no active music queue in the server!"
-      );
+      return this.client.mkembed({
+        description: "There is no active music queue in the server!"
+      });
     }
 
     if (serverQueue.voiceChannel !== voiceChannel) {
-      return this.createColouredEmbed("You are not in the right voice channel");
+      return this.client.mkembed({
+        description: "You are not in the right voice channel"
+      });
     }
 
     try {
@@ -71,7 +54,9 @@ export default class Skip extends Command {
       // Because of a state transition listener defined in Play.ts
       // transitions into the Idle state mean the next song is played
       serverQueue.audioPlayer.stop();
-      return this.createColouredEmbed("Skipped current song");
+      return this.client.mkembed({
+        description: "Skipped current song"
+      });
     } catch (error) {
       serverQueue.songs = [];
       console.log(error);

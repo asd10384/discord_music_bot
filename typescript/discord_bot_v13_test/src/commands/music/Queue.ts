@@ -7,25 +7,22 @@ export default class Queue extends Command {
   name = "queue";
   visible = true;
   description = "Prints out the first 10 songs of the queue";
-  information = "";
-  aliases = ["q"];
-  args = false;
-  usage = "";
-  example = "";
-  cooldown = 0;
-  category = "music";
+  information = "queue 출력";
+  aliases = [ "q", "목록" ];
+  cooldown = 1;
+  category = "음악";
   guildOnly = true;
   data = new SlashCommandBuilder()
     .setName(this.name)
     .setDescription(this.description);
   execute = (message: Message): Promise<Message> => {
     const queueEmbed = this.queue(message.guild);
-    return message.channel.send({ embeds: [queueEmbed] });
+    return message.channel.send({ embeds: [ queueEmbed ] });
   };
 
-  executeSlash = (interaction: CommandInteraction): Promise<void> => {
+  executeSlash = async (interaction: CommandInteraction): Promise<any> => {
     const queueEmbed = this.queue(interaction.guild);
-    return interaction.reply({ embeds: [queueEmbed] });
+    return await interaction.editReply({ embeds: [ queueEmbed ] });
   };
 
   /**
@@ -36,9 +33,7 @@ export default class Queue extends Command {
    */
   private queue(guild: Guild): MessageEmbed {
     const serverQueue = this.client.musicQueue.get(guild.id);
-    if (!serverQueue || serverQueue.songs.length === 0) {
-      return this.createColouredEmbed("There's no active queue");
-    }
+    if (!serverQueue || serverQueue.songs.length === 0) return this.client.mkembed({ description: "There's no active queue" });
 
     const songs = serverQueue.songs;
     const song = songs[0];
@@ -49,12 +44,9 @@ export default class Queue extends Command {
     const audioPlayerState = serverQueue.audioPlayer.state;
     if (audioPlayerState.status === AudioPlayerStatus.Playing) {
       // Type cast so that we can extract .playbackDuration
-      currStreamTime =
-        (audioPlayerState as AudioPlayerPlayingState).playbackDuration / 1000;
+      currStreamTime = (audioPlayerState as AudioPlayerPlayingState).playbackDuration / 1000;
     }
-    const currTimestamp = `${this.formatDuration(currStreamTime)}/${
-      song.formattedDuration
-    }`;
+    const currTimestamp = `${this.formatDuration(currStreamTime)}/${song.formattedDuration}`;
 
     // Initialise as duration left in first song
     let totalDuration = song.duration - currStreamTime;
@@ -69,25 +61,15 @@ export default class Queue extends Command {
       // Only add details of first 10 songs
       if (i < 10) {
         const duration = this.formatDuration(songs[i].duration);
-        songsInQueue += `${i + 1}: ${this.getFormattedLink(
-          songs[i]
-        )} (${duration})\n`;
+        songsInQueue += `${i+1}: ${this.getFormattedLink(songs[i])} (${duration})\n`;
       }
     }
 
-    const queueEmbed = this.createColouredEmbed()
-      .setTitle("Queue")
-      .setDescription(
-        `Song count: **${songs.length}** | Duration: **${this.formatDuration(
-          totalDuration
-        )}** | Repeat: **${serverQueue.isRepeating ? "On" : "Off"}**`
-      )
-      .addField(
-        "Now playing",
-        `${this.getFormattedLink(song)} (${currTimestamp})`,
-        false
-      )
-      .addField("Songs", songsInQueue, false);
+    const queueEmbed = this.client.mkembed({
+      title: `Queue`,
+      description: `Song count: **${songs.length}** | Duration: **${this.formatDuration(totalDuration)}** | Repeat: **${serverQueue.isRepeating ? "On" : "Off"}**`,
+      addField: { name: `Now playing`, value: `${this.getFormattedLink(song)} (${currTimestamp})`, inline: false }
+    }).addField("Songs", songsInQueue, false);
     return queueEmbed;
   }
 }
