@@ -39,7 +39,7 @@ export default class SetPrefix extends Command {
   executeSlash = (interaction: CommandInteraction): Promise<void> => {
     const guildId = interaction.guild.id;
     const newPrefix = interaction.options.getString("prefix");
-    return interaction.reply({ embeds: [this.setPrefix(guildId, newPrefix)] });
+    return await interaction.editReply({ embeds: [this.setPrefix(guildId, newPrefix)] });
   };
 
   /**

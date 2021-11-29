@@ -1,7 +1,7 @@
 import { Client } from "./Client";
 import { ISong } from "./interfaces/Bot";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction, Message, MessageActionRow, MessageButton, MessageEmbed, StageChannel, TextBasedChannels, VoiceChannel } from "discord.js";
+import { CommandInteraction, Message, MessageActionRow, MessageButton, MessageEmbed, MessageEmbedOptions, SelectMenuInteraction, StageChannel, TextBasedChannels, VoiceChannel } from "discord.js";
 
 export abstract class Command {
   client: Client;
@@ -15,7 +15,7 @@ export abstract class Command {
   abstract guildOnly: boolean;
   abstract data: Omit<SlashCommandBuilder, "addSubcommand" | "addSubcommandGroup">;
   abstract execute: (message: Message, args?: string[]) => Promise<Message | void>;
-  abstract executeSlash: (interaction: CommandInteraction) => Promise<void>;
+  abstract executeSlash: (interaction: CommandInteraction | SelectMenuInteraction) => Promise<void>;
 
   public constructor(client: Client) {
     this.client = client;

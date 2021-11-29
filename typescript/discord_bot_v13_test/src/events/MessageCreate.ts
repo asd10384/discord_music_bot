@@ -23,13 +23,24 @@ export default class MessageCreate extends Event {
 
     if (message.content.startsWith(prefix)) {
       // prefix 제거하고 args 재생성
-      const messageArgs = message.content.slice(prefix.length).split(/ +/);
+      const args = message.content.slice(prefix.length).trim().split(/ +/g);
       // 첫 args 를 소문자로 변환후 commandName 으로 등록
-      const commandName = messageArgs.shift().toLowerCase();
+      const commandName = args.shift()?.toLowerCase();
+
+      this.client.msgdelete(message, 150, true);
 
       // command 확인
       const command = this.client.commands.get(commandName) || this.client.commands.find((cmd) => cmd.aliases && cmd.aliases.includes(commandName));
-      if (!command) return;
+      if (!command) {
+        message.channel.send({ embeds: [
+          this.client.mkembed({
+            description: `\` ${commandName} \` 이라는 명령어를 찾을수 없습니다.`,
+            footer: { text: `${prefix}help 를 입력해 명령어를 확인해주세요.` },
+            color: "DARK_RED"
+          })
+        ] }).then(m => this.client.msgdelete(m, 1));
+        return;
+      }
 
       // 커맨드 오류처리
       //----------------------------------------------------------------------------
@@ -65,7 +76,7 @@ export default class MessageCreate extends Event {
       // Else executes the command
       //----------------------------------------------------------------------------
       try {
-        command.execute(message, messageArgs);
+        command.execute(message, args);
       } catch (error) {
         message.reply(`There was an error ${error}`);
         if (this.client.debug) console.log(error);
@@ -83,6 +94,7 @@ export default class MessageCreate extends Event {
     if (this.client.prefixes.hasOwnProperty(guild.id)) {
       return this.client.prefixes[guild.id];
     }
+    this.client.prefixes[guild.id] = config.prefix;
     return config.prefix;
   }
 }

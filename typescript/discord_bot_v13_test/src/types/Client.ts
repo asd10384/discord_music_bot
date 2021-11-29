@@ -1,10 +1,10 @@
 import { Command } from "./Command";
 import { Event } from "./Event";
 import { IServerMusicQueue } from "./interfaces/Bot";
-import { Collection, Client as DiscordClient, Intents, ColorResolvable, Message, MessageEmbedOptions, MessageEmbed } from "discord.js";
+import { Collection, Client as DiscordClient, Intents, ColorResolvable, Message, MessageEmbed } from "discord.js";
 import { readdirSync, statSync } from "fs";
 import { join } from "path";
-import { color, msgdeletetime } from "../config";
+import { color, msgdeletetime, prefix } from "../config";
 
 export class Client extends DiscordClient {
   commands: Collection<string, Command>;
@@ -57,7 +57,7 @@ export class Client extends DiscordClient {
           this.commands.set(command.name, command);
 
           // Slash commands
-          if (command.data !== null) {
+          if (command.data) {
             this.slashCommands.set(command.name, command);
           }
         }
@@ -66,12 +66,11 @@ export class Client extends DiscordClient {
 
     // Load all the events
     const eventFiles = readdirSync(eventsPath).filter((f) => f.endsWith(".js") || f.endsWith(".ts"));
-
+    
     for (const file of eventFiles) {
       const FoundEvent = require(join(`../events/${file}`)).default;
       const event: Event = new FoundEvent(this);
-      const eventFileName = file.slice(0,-3);
-      const eventName = eventFileName.toLowerCase();
+      const eventName = file.slice(0,-3);
       console.log(`${eventName} 이벤트 연결완료`);
       this.on(eventName, (...args: unknown[]) => event.run(args));
     }
@@ -96,17 +95,29 @@ export class Client extends DiscordClient {
   /**
    * mkembed
    * @param options 임배드에 들어갈 옵션들
+   * @returns message embed를 리턴
    */
-  public mkembed(options?: MessageEmbedOptions): MessageEmbed {
+  public mkembed(options?: {
+    title?: string,
+    description?: string,
+    author?: { name: string, iconURL?: string, url?: string },
+    url?: string,
+    footer?: { text: string, iconURL?: string },
+    image?: string,
+    thumbnail?: string,
+    color?: ColorResolvable,
+    addField?: { name: string, value: string, inline?: boolean }
+  }): MessageEmbed {
     const embed = new MessageEmbed().setColor(this.color);
     if (options?.title) embed.setTitle(options.title);
     if (options?.description) embed.setDescription(options.description);
     if (options?.author) embed.setAuthor(options.author.name, options.author.iconURL, options.author.url);
     if (options?.url) embed.setURL(options.url);
     if (options?.footer) embed.setFooter(options.footer.text, options.footer.iconURL);
-    if (options?.image) embed.setImage(options.image.url);
-    if (options?.thumbnail) embed.setThumbnail(options.thumbnail.url);
+    if (options?.image) embed.setImage(options.image);
+    if (options?.thumbnail) embed.setThumbnail(options.thumbnail);
     if (options?.color) embed.setColor(options.color);
+    if (options?.addField) embed.addField(options.addField.name, options.addField.value, options.addField.inline);
     return embed;
   }
 }

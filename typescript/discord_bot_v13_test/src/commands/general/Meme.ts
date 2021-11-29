@@ -19,9 +19,9 @@ export default class Meme extends Command {
     const memeEmbed = await this.meme();
     return message.channel.send({ embeds: [ memeEmbed ] }).then(m => this.client.msgdelete(m, 3));
   };
-  executeSlash = async (interaction: CommandInteraction): Promise<void> => {
+  executeSlash = async (interaction: CommandInteraction): Promise<any> => {
     const memeEmbed = await this.meme();
-    return interaction.reply({ embeds: [ memeEmbed ] });
+    return await interaction.editReply({ embeds: [ memeEmbed ] });
   };
 
   /**

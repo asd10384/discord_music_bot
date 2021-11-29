@@ -18,7 +18,7 @@ export default class Test extends Command {
     return message.channel.send({ embeds: [ this.test() ] }).then(m => this.client.msgdelete(m, 1.5));
   };
   executeSlash = (interaction: CommandInteraction): Promise<void> => {
-    return interaction.reply({ embeds: [ this.test() ] });
+    return await interaction.editReply({ embeds: [ this.test() ] });
   };
 
   private test(): MessageEmbed {

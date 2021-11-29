@@ -10,18 +10,20 @@ export default class Ready extends Event {
       const { slashCommands, token, testGuildId, user } = this.client;
 
       // Load up slash commands
-      if (token !== undefined) {
+      if (token) {
         const rest = new REST({ version: "9" }).setToken(token);
         const slashCommandsJSON = [];
         slashCommands.forEach((command) => slashCommandsJSON.push(command.data.toJSON()));
 
         // Load up commands of test server
-        if (testGuildId !== undefined) await this.loadTestServerCommands(slashCommandsJSON);
+        if (testGuildId) await this.loadTestServerCommands(slashCommandsJSON);
 
         // Load slash command routes for all servers (may take 1 hr to update)
-        if (REFRESH_SLASH_COMMAND_ON_READY) rest.put(Routes.applicationCommands(user.id), {
-          body: slashCommandsJSON,
-        });
+        if (REFRESH_SLASH_COMMAND_ON_READY) {
+          rest.put(Routes.applicationCommands(user.id), {
+            body: slashCommandsJSON
+          });
+        }
       }
       await this.setActivity();
       console.log(`봇이 ${this.client.guilds.cache.size}개 서버에서 활성화 되었습니다.`);
@@ -54,13 +56,13 @@ export default class Ready extends Event {
     const { user, testGuildId, token } = this.client;
     const rest = new REST({ version: "9" }).setToken(token);
     try {
-      console.log("(/) 커맨드 재설정중...");
+      console.log("테스트 서버 (/) 커맨드 재설정중...");
       await rest.put(Routes.applicationGuildCommands(user.id, testGuildId), {
         body: slashCommandsJSON
       });
-      console.log("(/) 커맨드 재설정 성공");
+      console.log("테스트 서버 (/) 커맨드 재설정 성공");
     } catch (error) {
-      console.log('(/) 커맨드 에러:', error);
+      console.log('테스트 서버 (/) 커맨드 에러:', error);
     }
   }
 }

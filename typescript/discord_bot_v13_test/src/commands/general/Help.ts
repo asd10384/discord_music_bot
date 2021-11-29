@@ -1,6 +1,6 @@
 import { Command } from "../../types/Command";
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { Collection, CommandInteraction, Message, MessageEmbed } from "discord.js";
+import { Collection, CommandInteraction, Message, MessageActionRow, MessageEmbed, MessageSelectMenu, SelectMenuInteraction } from "discord.js";
 
 export default class Help extends Command {
   name = "help"; // 이름
@@ -14,16 +14,30 @@ export default class Help extends Command {
   data = new SlashCommandBuilder() // slash command 설정
     .setName(this.name) // slash command 이름
     .setDescription(this.description) // slash command 설명
-    .addStringOption((option) => option // slash command option
-      .setName("command") // slash command option name
-      .setDescription("The command to get specific information on") // slash command option description
-    ); // slash command option end
+    // .addStringOption((option) => option // slash command option
+    //   .setName("command") // slash command option name
+    //   .setDescription("The command to get specific information on") // slash command option description
+    // ); // slash command option end
   execute = async (message: Message, args: string[]): Promise<Message | void> => {
-    return message.channel.send({ embeds: [ this.help(args[0]) ] }).then(m => this.client.msgdelete(m, 5));
+    if (args && args[0]) {
+      return message.channel.send({ embeds: [ this.help(args, message.guildId) ] }).then(m => this.client.msgdelete(m, 5));
+    } else {
+      return message.channel.send({ embeds: [ this.help(undefined, message.guildId) ]}).then(m => this.client.msgdelete(m, 3));
+    }
   };
 
-  executeSlash = async (interaction: CommandInteraction): Promise<void> => {
-    return interaction.reply({ embeds: [ this.help(interaction.options.getString("command")) ] });
+  executeSlash = async (interaction: CommandInteraction | SelectMenuInteraction): Promise<any> => {
+    if (interaction.isSelectMenu()) {
+      return await interaction.editReply({
+        embeds: [ this.help(interaction.values) ]
+      });
+    }
+    if (interaction.isCommand()) {
+      return await interaction.editReply({
+        embeds: [ this.help() ],
+        components: [ this.helprow() ]
+      });
+    }
   };
 
   /**
@@ -31,16 +45,40 @@ export default class Help extends Command {
    * @returns help embed for general help ro specific help for a command based
    *          off arguments
    */
-  private help(command?: string): MessageEmbed {
+  private help(command?: string[], ismsg?: string): MessageEmbed {
     const commands = this.client.commands;
     const helpEmbed = this.client.mkembed();
 
     if (command) {
-      this.specificInformation(helpEmbed, commands, command);
+      this.specificInformation(helpEmbed, commands, command[0], ismsg);
     } else {
-      this.generalInformation(helpEmbed, commands);
+      this.generalInformation(helpEmbed, commands, ismsg);
     }
     return helpEmbed;
+  }
+
+  /**
+   * @returns return help action row
+   */
+  private helprow(): MessageActionRow {
+    const cmdlist: { label: string, description: string, value: string }[] = [];
+    const commands = this.client.commands;
+    commands.map((command) => {
+      if (command.visible) {
+        cmdlist.push({
+          label: command.name,
+          description: command.information ? command.information : command.description,
+          value: command.name
+        });
+      }
+    });
+    return new MessageActionRow()
+      .addComponents(
+        new MessageSelectMenu()
+          .setCustomId('help')
+          .setPlaceholder('명령어를 선택해주세요.')
+          .addOptions(cmdlist)
+      );
   }
 
   /**
@@ -49,14 +87,16 @@ export default class Help extends Command {
    * @param helpEmbed the MessageEmbed to add details to
    * @param commands a collection of the bot's command
    */
-  private generalInformation(helpEmbed: MessageEmbed, commands: Collection<string, Command>): void {
+  private generalInformation(helpEmbed: MessageEmbed, commands: Collection<string, Command>, ismsg?: string): void {
     // Add all the details of the commands
     helpEmbed.setTitle("**사용가능한 명령어**");
 
     this.addCategory("기본", helpEmbed, commands);
     this.addCategory("음악", helpEmbed, commands);
-    this.addHelpAndSupport(helpEmbed);
-    helpEmbed.setFooter(`/help [command name] 으로 명령어 상세내용을 확인할수 있습니다.`);
+    helpEmbed.setFooter(
+      ismsg ? `${this.client.prefixes[ismsg]}help [command name] 으로 명령어 상세내용을 확인할수 있습니다.`
+      : `아래 선택메뉴로 명령어 상세내용을 확인할수 있습니다.`
+    );
   }
 
   /**
@@ -72,14 +112,14 @@ export default class Help extends Command {
     const dataCommands = commands;
     data.push(dataCommands.map((command) => {
       if (command.category === category && command.visible) {
-        return `**${command.name}**: ${command.description}\n`;
+        return `**${command.name}**: ${command.information ? command.information : command.description}\n`;
       } else {
         return "";
       }
     }).join(""));
 
     // Add it to the embed
-    helpEmbed.addField(`**${category}**`, data.join("\n"), false);
+    helpEmbed.addField(`**${category} 명령어**`, `${data.join("\n")}\n`, false);
   }
 
   /**
@@ -89,11 +129,16 @@ export default class Help extends Command {
    * @param helpEmbed the MessageEmbed to add details to
    * @param commands a collection of the bot's commands
    */
-  private specificInformation(helpEmbed: MessageEmbed, commands: Collection<string, Command>, name: string): void {
+  private specificInformation(helpEmbed: MessageEmbed, commands: Collection<string, Command>, name: string, ismsg?: string): void {
     // Check if the command exists
     name = name.toLowerCase();
     const command = commands.get(name) || commands.find((c) => c.aliases && c.aliases.includes(name));
-    if (!command) throw Error("Command given was not valid!");
+    if (!command) {
+      helpEmbed.setTitle(`\` help \` 명령어 오류`)
+        .setDescription(`\` ${name} \` **명령어를 찾을수 없습니다.**`)
+        .setColor("DARK_RED");
+      return;
+    }
 
     // Else find information on the command
     helpEmbed.setTitle(`\` ${command.name} \` 명령어`);
@@ -110,18 +155,5 @@ export default class Help extends Command {
       data.push(`**쿨타임:** ${command.cooldown} 초`);
     }
     helpEmbed.setDescription(data.join("\n"));
-  }
-
-  /**
-   * Adds details such as how to add the bot to another server, and link to
-   * source code
-   *
-   * @param helpEmbed the MessageEmbed to add details to
-   */
-  private addHelpAndSupport(helpEmbed: MessageEmbed): void {
-    helpEmbed.addField(
-      "**Help and Support**",
-      `오류발견시 **tmdgks0466@naver.com** \`제목: 오류발견\` 으로 연락바람`
-    );
   }
 }

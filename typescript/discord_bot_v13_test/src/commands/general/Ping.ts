@@ -17,8 +17,8 @@ export default class Ping extends Command {
   execute = (message: Message): Promise<Message | void> => {
     return message.channel.send({ embeds: [ this.ping(message.createdTimestamp) ] }).then(m => this.client.msgdelete(m, 1.5));
   };
-  executeSlash = (interaction: CommandInteraction): Promise<void> => {
-    return interaction.reply({ embeds: [ this.ping(interaction.createdTimestamp) ] });
+  executeSlash = async (interaction: CommandInteraction): Promise<any> => {
+    return await interaction.editReply({ embeds: [ this.ping(interaction.createdTimestamp) ] });
   };
 
   private ping(startTime: number): MessageEmbed {
