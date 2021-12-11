@@ -1,47 +1,18 @@
-import { GuildModel } from "./database/Guild";
-import { Client } from "./types/Client";
-import { connect as mongooseConnect } from "mongoose";
+import BotClient from "./classes/BotClient";
+import SlashHandler from "./classes/SlashHandler";
+import MsgHandler from "./classes/MsgHandler";
 
-// dotenv
-import { config } from "dotenv";
-config();
+import onReady from "./events/onReady";
+import onInteractionCreate from "./events/onInteractionCreate";
+import onMessageCreate from "./events/onMessageCreate";
+import onmessageReactionAdd from "./events/onmessageReactionAdd";
 
-// 봇 설정
-//------------------------------------------------------------------------------
-const dev: boolean = process.argv[0].includes("ts-node");
-const commandPaths: string = dev ? "src/commands" : "dist/src/commands";
-const eventsPath: string = dev ? "src/events" : "dist/src/events";
+// 봇 클라이언트 생성
+export const client = new BotClient();
+export const slash = new SlashHandler();
+export const msg = new MsgHandler();
 
-if (dev) console.log(`DEV 활성화`);
-
-const client = new Client(
-  commandPaths,
-  eventsPath,
-  dev,
-  process.env.BOT_TOKEN,
-  process.env.TEST_SERVER_ID
-);
-
-
-// mongoose 데이터베이스 연결
-//------------------------------------------------------------------------------
-mongooseConnect(process.env.MONGOOSE_URL).then(() => {
-  console.log("MongoDB: 연결완료");
-  GuildModel.find().then((guilds) => {
-    guilds.forEach((guild) => {
-      client.prefixes[guild.guildId] = guild.prefix;
-    });
-  }).catch((err) => {
-    console.log("MongoDB: server ids가 없음, 에러코드:", err);
-  });
-}).catch((err) => {
-  console.log("MongoDB: MongoDB에 연결하지 못함, 에러코드:", err);
-});
-
-// 로그인
-//------------------------------------------------------------------------------
-try {
-  client.login(process.env.BOT_TOKEN);
-} catch (error) {
-  console.log(`봇로그인: 오류발생: ${error}`);
-}
+client.onEvent('ready', onReady);
+client.onEvent('interactionCreate', onInteractionCreate);
+client.onEvent('messageCreate', onMessageCreate);
+client.onEvent('messageReactionAdd', onmessageReactionAdd);
