@@ -1,6 +1,5 @@
 import { client } from "..";
-import { PM, M } from "../aliases/discord.js.js"
-import mkembed from "../function/mkembed";
+import { PM, M, I } from "../aliases/discord.js.js"
 import { nowplay } from "../database/obj/guild";
 import ytsr from "ytsr";
 import ytdl from "ytdl-core";
@@ -9,7 +8,7 @@ import getchannel from "./getchannel";
 import MDB from "../database/Mongodb";
 import setmsg from "./msg";
 import stop from "./stop";
-import { TextChannel } from "discord.js";
+import { Message, PartialMessage, TextChannel } from "discord.js";
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { config } from "dotenv";
 import internal from "stream";
@@ -51,7 +50,7 @@ export async function play(message: M | PM, getsearch?: ytsr.Video) {
         musicDB.nowplaying = data;
       } else {
         (message.guild?.channels.cache.get(channelid) as TextChannel).send({ embeds: [
-          mkembed({
+          client.mkembed({
             title: `오류발생`,
             description: '현재 지역에서 영상을 재생할수 없습니다.',
             footer: { text: `Area error` },
@@ -64,6 +63,9 @@ export async function play(message: M | PM, getsearch?: ytsr.Video) {
     } else {
       return getVoiceConnection(message.guildId!)?.disconnect();
     }
+    musicDB.playing = true;
+    client.music.set(message.guildId!, musicDB);
+    setmsg(message);
     const connection = joinVoiceChannel({
       adapterCreator: message.guild?.voiceAdapterCreator!,
       guildId: message.guildId!,
@@ -113,19 +115,18 @@ export async function play(message: M | PM, getsearch?: ytsr.Video) {
     }
     const resource = createAudioResource(ytsource, { inlineVolume: true, inputType: StreamType.Arbitrary });
     resource.volume?.setVolume((guildDB.options.volume) ? guildDB.options.volume / 100 : 0.7);
-    musicDB.playing = true;
-    client.music.set(message.guildId!, musicDB);
     Player.play(resource);
     const subscription = connection.subscribe(Player);
     mapPlayer.set(guildid, Player);
-    setmsg(message);
     // connection.on(VoiceConnectionStatus.Ready, () => {
     //   // 봇 음성채널에 접속
     // });
     Player.on(AudioPlayerStatus.Idle, (P) => {
       // 봇 노래 재생 끝났을때
-      Player.stop();
-      play(message, undefined);
+      if (!mapPlayer.get(guildid)) {
+        Player.stop();
+        play(message, undefined);
+      }
     });
     connection.on(VoiceConnectionStatus.Disconnected, () => {
       // 봇 음성채널에서 퇴장
@@ -135,7 +136,7 @@ export async function play(message: M | PM, getsearch?: ytsr.Video) {
     connection.on('error', (err) => {
       if (client.debug) console.log('connection오류:', err);
       (message.guild?.channels.cache.get(channelid) as TextChannel).send({ embeds: [
-        mkembed({
+        client.mkembed({
           title: `오류발생`,
           description: '영상을 재생할수 없습니다.\n다시 시도해주세요.',
           footer: { text: `connection error` },
@@ -147,7 +148,7 @@ export async function play(message: M | PM, getsearch?: ytsr.Video) {
     Player.on('error', (err) => {
       if (client.debug) console.log('Player오류:', err);
       (message.guild?.channels.cache.get(channelid) as TextChannel).send({ embeds: [
-        mkembed({
+        client.mkembed({
           title: `오류발생`,
           description: '영상을 재생할수 없습니다.\n다시 시도해주세요.',
           footer: { text: `Player error` },
@@ -158,7 +159,7 @@ export async function play(message: M | PM, getsearch?: ytsr.Video) {
     });
   } else {
     return message.channel.send({ embeds: [
-      mkembed({
+      client.mkembed({
         title: '음성채널을 찾을수 없습니다.',
         description: '음성채널에 들어가서 사용해주세요.',
         color: 'DARK_RED'
@@ -180,6 +181,20 @@ export function pause(message: M | PM) {
   }
 }
 
+export async function skipPlayer(message: M | PM) {
+  const Player = mapPlayer.get(message.guildId!);
+  const connection = getVoiceConnection(message.guildId!);
+  if (Player) {
+    if (connection) {
+      Player.stop();
+      await entersState(connection, VoiceConnectionStatus.Ready, 5_000);
+      play(message);
+    } else {
+      mapPlayer.set(message.guildId!, undefined);
+      Player.stop();
+    }
+  }
+}
 export async function stopPlayer(guildId: string) {
   const Player = mapPlayer.get(guildId);
   if (Player) {

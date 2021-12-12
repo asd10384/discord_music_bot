@@ -1,22 +1,9 @@
-import { Client, ClientEvents, ColorResolvable, Message } from 'discord.js';
+import { ChatInputApplicationCommandData, Client, ClientEvents, ColorResolvable, EmbedFieldData, Message, MessageEmbed } from 'discord.js';
 import { config } from 'dotenv';
 import _ from '../consts';
+import { music } from "../database/obj/guild";
 
 config(); // .env 불러오기
-
-interface nowplay {
-  title: string,
-  author: string,
-  duration: string,
-  url: string,
-  image: string,
-  player: string
-};
-interface music {
-  playing: boolean;
-  nowplaying: nowplay | null;
-  queue: nowplay[]
-};
 
 /**
  * 봇 클라이언트
@@ -109,5 +96,57 @@ export default class BotClient extends Client {
     };
     this.music.set(guildId, output);
     return output;
+  }
+  mkembed(data: {
+    title?: string,
+    description?: string,
+    url?: string,
+    image?: string,
+    thumbnail?: string,
+    author?: { name: string, iconURL?: string, url?: string },
+    addField?: { name: string, value: string, inline?: boolean },
+    addFields?: EmbedFieldData[],
+    timestamp?: number | Date | undefined | null,
+    footer?: { text: string, iconURL?: string },
+    color?: ColorResolvable
+  }): MessageEmbed {
+    const embed = new MessageEmbed();
+    if (data.title) embed.setTitle(data.title);
+    if (data.description) embed.setDescription(data.description);
+    if (data.url) embed.setURL(data.url);
+    if (data.image) embed.setImage(data.image);
+    if (data.thumbnail) embed.setThumbnail(data.thumbnail);
+    if (data.author) embed.setAuthor(data.author.name, data.author.iconURL, data.author.url);
+    if (data.addField) embed.addField(data.addField.name, data.addField.value, data.addField.inline);
+    if (data.addFields) embed.addFields(data.addFields);
+    if (data.timestamp) embed.setTimestamp(data.timestamp);
+    if (data.footer) embed.setFooter(data.footer.text, data.footer.iconURL);
+    if (data.color) embed.setColor(data.color);
+    return embed;
+  }
+
+  help(name: string, metadata: ChatInputApplicationCommandData, slash?: boolean): MessageEmbed {
+    const prefix = slash ? '/' : this.prefix;
+    var text = "";
+    metadata.options?.forEach((opt) => {
+      text += `${prefix}${name} ${opt.name}`;
+      if (opt.type === "SUB_COMMAND" && opt.options) {
+        if (opt.options.length > 1) {
+          text = "";
+          opt.options.forEach((opt2) => {
+            text += `${prefix}${name} ${opt.name} [${opt2.type}] : ${opt.description}\n`;
+          });
+        } else {
+          text += ` [${opt.options[0].type}] : ${opt.description}\n`;
+        }
+      } else {
+        text += ` : ${opt.description}\n`;
+      }
+    });
+    return this.mkembed({
+      title: `\` 역할 도움말 \``,
+      description: text,
+      color: this.embedcolor
+    });
   }
 }

@@ -3,7 +3,6 @@ import { M, PM, I } from "../aliases/discord.js";
 import { guild_type, nowplay } from "../database/obj/guild";
 import MDB from "../database/Mongodb";
 import { TextChannel } from "discord.js";
-import mkembed from "../function/mkembed";
 
 export default async function setmsg(message: M | PM | I, pause?: boolean) {
   MDB.module.guild.findOne({ id: message.guildId! }).then((guildDB) => {
@@ -50,7 +49,7 @@ function setembed(guildDB: guild_type, pause?: boolean) {
     title = `**현재 노래가 재생되지 않았습니다**.`;
     data.image = 'https://cdn.hydra.bot/hydra_no_music.png';
   }
-  let em = mkembed({
+  let em = client.mkembed({
     title: title,
     image: data.image,
     url: data.url,

@@ -2,6 +2,12 @@ import { config } from "dotenv";
 import { Document, model, Schema } from "mongoose";
 config();
 
+export interface music {
+  playing: boolean;
+  nowplaying: nowplay | null;
+  queue: nowplay[]
+};
+
 export interface nowplay {
   title: string,
   author: string,
