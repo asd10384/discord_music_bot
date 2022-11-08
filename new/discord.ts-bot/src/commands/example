@@ -17,7 +17,7 @@ import { Message, EmbedBuilder, ApplicationCommandOptionType, ChatInputApplicati
 export default class implements Command {
   /** 해당 명령어 설명 */
   name = "example";
-  visible = false;
+  visible = true;
   description = "example";
   information = "example";
   aliases: string[] = [];
