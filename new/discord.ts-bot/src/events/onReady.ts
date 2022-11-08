@@ -1,12 +1,14 @@
+import "dotenv/config";
 import { client, handler } from "..";
 import { Logger } from "../utils/Logger";
 
 export const onReady = () => {
   if (!client.user) return;
-
-  let actlist: { text: string, time: number }[] = JSON.parse(JSON.stringify(process.env.ACTIVITY || '[{ "text": `/help`, time: 10 }, { "text": `${client.prefix}help`, "time": 10 }]'));
+  const prefix = client.prefix;
+  let actlist: { text: string, time: number }[] = eval(process.env.ACTIVITY || '[{ "text": `/help`, time: 10 }, { "text": `${prefix}help`, "time": 10 }]');
 
   Logger.log(`Ready! ${client.user.username}`);
+  Logger.log(`prefix: ${prefix}`);
   Logger.log(`Activity: ${JSON.stringify(actlist)}`);
   Logger.log(`로그확인: ${client.debug}`);
 
