@@ -9,6 +9,15 @@ export const onInteractionCreate = async (interaction: Interaction) => {
     const command = handler.commands.get(commandName);
     if (command && command.menuRun) return command.menuRun(interaction, args);
   }
+  
+  if (interaction.isButton()) {
+    const args = interaction.customId.split("-");
+    if (!args || args.length === 0) return;
+    await interaction.deferReply({ ephemeral: true, fetchReply: true });
+    const command = handler.commands.get(args.shift()!);
+    if (command && command.buttonRun) return command.buttonRun(interaction, args);
+  }
+
   if (!interaction.isCommand()) return;
 
   /**
