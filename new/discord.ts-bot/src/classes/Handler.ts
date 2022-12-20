@@ -1,4 +1,6 @@
+import "dotenv/config";
 import { client } from "..";
+import { DefaultRestOptions, REST, Routes } from "discord.js";
 import { Consts } from "../config/consts";
 import { ApplicationCommandData, Collection, CommandInteraction, Message } from "discord.js";
 import { Command } from "../interfaces/Command";
@@ -25,6 +27,13 @@ export class SlashHandler {
   }
 
   public async registCachedCommands(client: BotClient) {
+    if (!process.env.DISCORD_CLIENTID) {
+      throw new TypeError("DISCORD_CLIENTID을 찾을수 없음");
+    }
+    if (!process.env.DISCORD_TOKEN) {
+      throw new TypeError("DISCORD_TOKEN을 찾을수 없음");
+    }
+    
     if (!client.application) return Logger.warn('WARNING: registCachedCommands() called before application is ready.');
 
     const metadatas = [] as ApplicationCommandData[];
@@ -34,16 +43,22 @@ export class SlashHandler {
       metadatas.push(command.metadata);
     }
 
+    const rest = new REST({ version: DefaultRestOptions.version }).setToken(process.env.DISCORD_TOKEN);
+
     if (process.env.ENVIROMENT?.toUpperCase() === 'DEV') {
-      await client.application.commands.set([], process.env.ENVIROMENT_DEV_GUILDID!);
-      await client.application.commands.set(metadatas, process.env.ENVIROMENT_DEV_GUILDID!);
+      await rest.put(
+        Routes.applicationGuildCommands(process.env.DISCORD_CLIENTID, process.env.ENVIROMENT_DEV_GUILDID!),
+        { body: metadatas }
+      );
 
       Logger.log('Registered commands for guild: ' + process.env.ENVIROMENT_DEV_GUILDID!);
       return;
     }
 
-    await client.application.commands.set([]);
-    await client.application.commands.set(metadatas);
+    await rest.put(
+      Routes.applicationCommands(process.env.DISCORD_CLIENTID),
+      { body: metadatas }
+    );
     Logger.log('Registered commands.');
   }
 

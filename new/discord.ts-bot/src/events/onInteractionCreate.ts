@@ -2,7 +2,7 @@ import { Interaction } from "discord.js";
 import { handler } from "..";
 
 export const onInteractionCreate = async (interaction: Interaction) => {
-  if (interaction.isSelectMenu()) {
+  if (interaction.isStringSelectMenu()) {
     await interaction.deferReply({ ephemeral: true, fetchReply: true }).catch(() => {});
     const commandName = interaction.customId;
     const args = interaction.values;

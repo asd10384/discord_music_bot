@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { ApplicationCommandOptionType, ChatInputApplicationCommandData, Client, ClientEvents, ColorResolvable, EmbedBuilder, EmbedField, Message } from "discord.js";
 import { Consts } from "../config/consts";
+// import { Logger } from "../utils/Logger";
 
 export class BotClient extends Client {
   public debug: boolean;
@@ -9,10 +10,7 @@ export class BotClient extends Client {
 
   public constructor() {
     super({ intents: Consts.CLIENT_INTENTS });
-    if (!process.env.DISCORD_TOKEN) {
-      throw new TypeError("DISCORD_TOKEN을 찾을수 없음");
-    }
-
+    
     this.debug = JSON.parse(process.env.DEBUG || "false");
     this.prefix = process.env.PREFIX || "t;";
 
@@ -41,7 +39,7 @@ export class BotClient extends Client {
    * 
    * @example
    *    client.onEvent('ready', (client, info) => {
-   *      console.log(client?.user.username, '봇이 준비되었습니다.', info) // 출력: OOO 봇이 준비되었습니다. 추가 정보
+   *      Logger.log(client?.user.username, '봇이 준비되었습니다.', info) // 출력: OOO 봇이 준비되었습니다. 추가 정보
    *    }, ['추가 정보']);
    * 
    * @param event 이벤트명

@@ -83,7 +83,7 @@ export default class implements Command {
     if (!(await ckper(interaction))) return await interaction.followUp({ embeds: [ emper ] });
     const cmd = interaction.options.data[0];
     const role = cmd.options ? cmd.options[0]?.role : undefined;
-    let guildDB = await QDB.get(interaction.guild!);
+    let guildDB = await QDB.guild.get(interaction.guild!);
     if (cmd.name === '목록') return await interaction.followUp({ embeds: [ this.list(guildDB) ] });
     if (cmd.name === '추가') return await interaction.followUp({ embeds: [ await this.add(guildDB, role!.id) ] });
     if (cmd.name === '제거') return await interaction.followUp({ embeds: [ await this.remove(guildDB, role!.id) ] });
@@ -93,7 +93,7 @@ export default class implements Command {
   }
   async messageRun(message: Message, args: string[]) {
     if (!(await ckper(message))) return message.channel.send({ embeds: [ emper ] });
-    let guildDB = await QDB.get(message.guild!);
+    let guildDB = await QDB.guild.get(message.guild!);
     if (!guildDB) return message.channel.send({ embeds: [ client.mkembed({
       title: `데이터베이스오류`,
       description: "다시시도해주세요.",
@@ -147,7 +147,7 @@ export default class implements Command {
       });
     } else {
       guildDB.role.push(roleId);
-      return await QDB.set(guildDB.id, { role: guildDB.role }).then((val) => {
+      return await QDB.guild.set(guildDB.id, { role: guildDB.role }).then((val) => {
         if (!val) return client.mkembed({
           title: `\` 역할 추가 오류 \``,
           description: `<@&${roleId}> 역할 추가 중 오류발생`,
@@ -175,7 +175,7 @@ export default class implements Command {
         if (ID !== roleId) list.push(ID);
       });
       guildDB.role = list;
-      return await QDB.set(guildDB.id, { role: guildDB.role }).then((val) => {
+      return await QDB.guild.set(guildDB.id, { role: guildDB.role }).then((val) => {
         if (!val) return client.mkembed({
           title: `\` 역할 제거 오류 \``,
           description: `<@&${roleId}> 역할 제거 중 오류발생`,

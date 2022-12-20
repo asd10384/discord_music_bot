@@ -1,5 +1,6 @@
 import { client } from "../index";
 import { Command } from "../interfaces/Command";
+import { Logger } from "../utils/Logger";
 import { Message, EmbedBuilder, ApplicationCommandOptionType, ChatInputApplicationCommandData, CommandInteraction } from "discord.js";
 // import { check_permission as ckper, embed_permission as emper } from "../utils/Permission";
 // import { QDB } from "../databases/Quickdb";
