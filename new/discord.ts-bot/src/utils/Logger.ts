@@ -1,8 +1,7 @@
-import * as colors from "colors";
+import colors from "colors/safe";
 import { Timestamp } from "./Timestamp";
 
 type logType = "log" | "info" | "warn" | "error" | "debug" | "load" | "ready";
-
 
 export const log = (content: string, type: logType) => {
   const timestamp = colors.white(`[${Timestamp()}]`);

@@ -1,6 +1,6 @@
 import { client, handler } from "../index";
 import { Command } from "../interfaces/Command";
-import { CacheType, Message, ActionRowBuilder, EmbedBuilder, SelectMenuBuilder, SelectMenuInteraction, ChatInputApplicationCommandData, CommandInteraction } from "discord.js";
+import { CacheType, Message, ActionRowBuilder, EmbedBuilder, ChatInputApplicationCommandData, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
 
 /**
  * DB
@@ -30,7 +30,7 @@ export default class implements Command {
   async messageRun(message: Message) {
     return message.channel.send(this.gethelp()).then(m => client.msgdelete(m, 5));
   }
-  async menurun(interaction: SelectMenuInteraction<CacheType>, args: string[]) {
+  async menurun(interaction: StringSelectMenuInteraction<CacheType>, args: string[]) {
     const command = handler.commands.get(args[0]);
     var embed = client.mkembed({  });
     var embed2: EmbedBuilder | undefined = undefined;
@@ -48,7 +48,7 @@ export default class implements Command {
     return await interaction.followUp({ embeds: [ embed ] });
   }
 
-  gethelp(): { embeds: EmbedBuilder[], components: ActionRowBuilder<SelectMenuBuilder>[] } {
+  gethelp(): { embeds: EmbedBuilder[], components: ActionRowBuilder<StringSelectMenuBuilder>[] } {
     const slashcmdembed = client.mkembed({
       title: `\` slash (/) 도움말 \``,
       description: `명령어\n명령어 설명`
@@ -76,8 +76,8 @@ export default class implements Command {
       description: `명령어의 자세한 내용은\n아래의 선택박스에서 선택해\n확인할수있습니다.`,
       footer: { text: '여러번 가능' }
     });
-    const row = new ActionRowBuilder<SelectMenuBuilder>().addComponents(
-      new SelectMenuBuilder()
+    const row = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder()
         .setCustomId('help')
         .setPlaceholder('명령어를 선택해주세요.')
         .addOptions(cmdlist)

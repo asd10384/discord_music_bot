@@ -11,7 +11,6 @@
     "alwaysStrict": true,
     "skipLibCheck": true,
 
-    "declaration": true, //컴파일시 .d.ts 파일도 자동으로 함께생성 (현재쓰는 모든 타입이 정의된 파일)
     "noImplicitAny": true, //any타입 금지 여부
     "strictNullChecks": true, //null, undefined 타입에 이상한 짓 할시 에러내기 
     "strictFunctionTypes": true, //함수파라미터 타입체크 강하게 
