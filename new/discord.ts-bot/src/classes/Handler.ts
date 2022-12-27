@@ -45,21 +45,27 @@ export class SlashHandler {
 
     const rest = new REST({ version: DefaultRestOptions.version }).setToken(process.env.DISCORD_TOKEN);
 
+    await rest.put(
+      Routes.applicationCommands(process.env.DISCORD_CLIENTID),
+      { body: [] }
+    ).then(() => Logger.debug('Successfully deleted commands.'));
+
     if (process.env.ENVIROMENT?.toUpperCase() === 'DEV') {
       await rest.put(
         Routes.applicationGuildCommands(process.env.DISCORD_CLIENTID, process.env.ENVIROMENT_DEV_GUILDID!),
+        { body: [] }
+      ).then(() => Logger.debug("Successfully deleted commands for guild: " + process.env.ENVIROMENT_DEV_GUILDID!));
+      await rest.put(
+        Routes.applicationGuildCommands(process.env.DISCORD_CLIENTID, process.env.ENVIROMENT_DEV_GUILDID!),
         { body: metadatas }
-      );
-
-      Logger.log('Registered commands for guild: ' + process.env.ENVIROMENT_DEV_GUILDID!);
+      ).then(() => Logger.debug('Registered commands for guild: ' + process.env.ENVIROMENT_DEV_GUILDID!));
       return;
     }
 
     await rest.put(
       Routes.applicationCommands(process.env.DISCORD_CLIENTID),
       { body: metadatas }
-    );
-    Logger.log('Registered commands.');
+    ).then(() => Logger.debug('Registered commands.'));
   }
 
   public runCommand (interaction: CommandInteraction) {

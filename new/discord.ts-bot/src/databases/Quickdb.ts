@@ -13,32 +13,24 @@ export interface guildData {
   name: string;
   prefix: string;
   role: string[];
+  channelId: string;
 }
 interface getguildData {
   id?: string;
   name?: string;
   prefix?: string;
   role?: string[];
+  channelId?: string;
 }
 
 /** User DB */
 export interface userData {
   id: string;
   name: string;
-  money: number;
-  support: {
-    money: boolean;
-    time: number;
-  }
 }
 interface getuserData {
   id?: string;
   name?: string;
-  money?: number;
-  support: {
-    money: boolean;
-    time: number;
-  }
 }
 
 /** Guild DB */
@@ -66,7 +58,8 @@ const guild_get = (guild: Guild) => new Promise<guildData>((res, rej) => {
         id: guild.id,
         prefix: client.prefix,
         name: "",
-        role: []
+        role: [],
+        channelId: ""
       };
       output = data;
     }
@@ -131,12 +124,7 @@ const user_get = (guild: Guild, member: GuildMember) => new Promise<userData>(as
       }
       let data: userData = {
         id: member.id,
-        name: "",
-        money: 0,
-        support: {
-          money: false,
-          time: 0
-        }
+        name: ""
       };
       output = data;
     }
