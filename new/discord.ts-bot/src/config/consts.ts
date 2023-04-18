@@ -7,7 +7,7 @@ export class Consts {
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
     GatewayIntentBits.GuildMessageReactions,
-    // GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.GuildVoiceStates,
     GatewayIntentBits.GuildIntegrations,
     GatewayIntentBits.GuildMessageTyping,
     GatewayIntentBits.MessageContent

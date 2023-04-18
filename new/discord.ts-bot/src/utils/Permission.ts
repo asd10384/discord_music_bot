@@ -13,9 +13,9 @@ export const check_permission = async (message: CommandInteraction | Message): P
   if (check_admin(message)) return true;
   let userper = message.member?.permissions as PermissionsBitField;
   if (userper && userper.has("Administrator")) return true;
-  let guildDB = await QDB.guild.get(message.guild!);
+  const GDB = await QDB.guild.get(message.guild!);
   let userrole = message.member?.roles as GuildMemberRoleManager;
-  if (userrole && userrole.cache.some(role => guildDB.role.includes(role.id))) return true;
+  if (userrole && userrole.cache.some(role => GDB.role.includes(role.id))) return true;
   return false;
 }
 

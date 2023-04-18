@@ -3,3 +3,6 @@ dist/
 package-lock.json
 test*.ts
 .env
+test_file/
+*.sqlite
+music/

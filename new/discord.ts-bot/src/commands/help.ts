@@ -1,10 +1,10 @@
 import { client, handler } from "../index";
 import { Command } from "../interfaces/Command";
-import { CacheType, Message, ActionRowBuilder, EmbedBuilder, ChatInputApplicationCommandData, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction } from "discord.js";
+import { CacheType, Message, ActionRowBuilder, EmbedBuilder, ChatInputApplicationCommandData, CommandInteraction, StringSelectMenuBuilder, StringSelectMenuInteraction, TextChannel } from "discord.js";
 
 /**
  * DB
- * let guildDB = await QDB.get(interaction);
+ * const GDB = await QDB.get(interaction);
  * 
  * check permission(role)
  * if (!(await ckper(interaction))) return await interaction.followUp({ embeds: [ emper ] });
@@ -28,7 +28,7 @@ export default class implements Command {
     return await interaction.followUp(this.gethelp());
   }
   async messageRun(message: Message) {
-    return message.channel.send(this.gethelp()).then(m => client.msgdelete(m, 5));
+    return (message.channel as TextChannel).send(this.gethelp()).then(m => client.msgdelete(m, 5));
   }
   async menurun(interaction: StringSelectMenuInteraction<CacheType>, args: string[]) {
     const command = handler.commands.get(args[0]);

@@ -1,12 +1,14 @@
 import "dotenv/config";
-import { ApplicationCommandOptionType, ChatInputApplicationCommandData, Client, ClientEvents, ColorResolvable, EmbedBuilder, EmbedField, Message } from "discord.js";
+import { ApplicationCommandOptionType, ChatInputApplicationCommandData, Client, ClientEvents, ColorResolvable, EmbedBuilder, EmbedField, Guild, Message } from "discord.js";
 import { Consts } from "../config/consts";
 // import { Logger } from "../utils/Logger";
+import { EXA } from "../Example/exampleClass";
 
 export class BotClient extends Client {
   public debug: boolean;
   public prefix: string;
   public embedColor: ColorResolvable;
+  public ttsClass: Map<string, EXA>;
 
   public constructor() {
     super({ intents: Consts.CLIENT_INTENTS });
@@ -17,6 +19,8 @@ export class BotClient extends Client {
     this.embedColor = process.env.EMBED_COLOR
       ? process.env.EMBED_COLOR.trim().charAt(0).toLocaleUpperCase() + process.env.EMBED_COLOR.trim().slice(1).toLocaleLowerCase() as ColorResolvable
       : "Orange";
+
+    this.ttsClass = new Map();
     this.login(process.env.DISCORD_TOKEN);
   }
 
@@ -25,7 +29,7 @@ export class BotClient extends Client {
     if (deletetime < 100) deletetime = 100;
     setTimeout(() => {
       try {
-        if (message.deletable) message.delete().catch(() => {});
+        if (message.deletable) message.delete();
       } catch {};
     }, deletetime);
   }
@@ -76,6 +80,11 @@ export class BotClient extends Client {
       embed.setColor(this.embedColor);
     }
     return embed;
+  }
+
+  gettts(guild: Guild): EXA {
+    if (!this.ttsClass.has(guild.id)) this.ttsClass.set(guild.id, new EXA(guild));
+    return this.ttsClass.get(guild.id)!;
   }
 
   public help(name: string, metadata: ChatInputApplicationCommandData, msgmetadata?: { name: string, des: string }[]): EmbedBuilder | undefined {

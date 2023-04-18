@@ -13,14 +13,30 @@ export interface guildData {
   name: string;
   prefix: string;
   role: string[];
-  channelId: string;
+  tts: {
+    channelId: string;
+    use: boolean;
+    length: number;
+  },
+  autovc: {
+    first: { channelID: string, categoryID: string, limit: number }[];
+    second: { id: string, userId: string }[];
+  }
 }
 interface getguildData {
   id?: string;
   name?: string;
   prefix?: string;
   role?: string[];
-  channelId?: string;
+  tts?: {
+    channelId: string;
+    use: boolean;
+    length: number;
+  };
+  autovc?: {
+    first: { channelID: string, categoryID: string, limit: number }[];
+    second: { id: string, userId: string }[];
+  };
 }
 
 /** User DB */
@@ -28,11 +44,23 @@ export interface userData {
   id: string;
   name: string;
   guildList: string[];
+  tts: {
+    ban: boolean;
+    time: number;
+    banforid: string;
+    date: number;
+  };
 }
 interface getuserData {
   id?: string;
   name?: string;
   guildList?: string[];
+  tts?: {
+    ban: boolean;
+    time: number;
+    banforid: string;
+    date: number;
+  };
 }
 
 /** Guild DB */
@@ -47,7 +75,15 @@ const guild_get = (guild: Guild) => new Promise<guildData>(async (res, _rej) => 
     prefix: client.prefix,
     name: guild.name,
     role: [],
-    channelId: ""
+    tts: {
+      channelId: "",
+      length: 300,
+      use: true
+    },
+    autovc: {
+      first: [],
+      second: []
+    }
   };
   await qdb.table("guild").set("s"+guild.id, data).catch(() => {});
   return res(data);
@@ -95,7 +131,13 @@ const user_get = (guild: Guild, member: GuildMember) => new Promise<userData>(as
   let data: userData = {
     id: member.id,
     name: member.user.tag,
-    guildList: []
+    guildList: [],
+    tts: {
+      ban: false,
+      time: 0,
+      banforid: "",
+      date: 0
+    }
   };
   await qdb.table("user").set("s"+member.id, data).catch(() => {});
   return res(data);
